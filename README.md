@@ -110,3 +110,31 @@ curl -X POST http://localhost:8080/api/visits/location/1 -H "Authorization: Bear
 ```bash
 curl -X GET http://localhost:8080/api/visits/user/upcoming -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
+
+## API Documentation Tools
+
+### Swagger/OpenAPI UI
+
+The application includes Swagger/OpenAPI documentation, which provides an interactive UI to explore and test the API endpoints:
+
+1. Start the application
+2. Navigate to: http://localhost:8080/api/swagger-ui.html
+3. Use the UI to explore endpoints, see request/response schemas, and test API calls
+
+### Postman Collection
+
+A comprehensive Postman collection is available in the `postman` directory:
+
+1. Import the following files into Postman:
+   - `postman/User_Checkin_System.postman_collection.json`
+   - `postman/User_Checkin_System.postman_environment.json`
+2. Set the "User Checkin System - Local" environment
+3. Use the authentication endpoint to get a token (automatically saved to environment)
+4. All other requests will automatically use the authentication token
+
+For detailed information about using the API documentation tools, refer to the [API_DOCUMENTATION.md](API_DOCUMENTATION.md) file.
+
+## GitHub Repository
+
+This project is maintained in a GitHub repository at: https://github.com/naveen0818/naveen0818
+# new-user-checkin-system

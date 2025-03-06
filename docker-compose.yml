@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: checkin-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: checkin_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - checkin-network
+
+volumes:
+  postgres_data:
+
+networks:
+  checkin-network:
+    driver: bridge

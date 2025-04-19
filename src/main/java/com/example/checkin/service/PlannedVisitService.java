@@ -92,4 +92,39 @@ public class PlannedVisitService {
     public void deletePlannedVisit(Long id) {
         plannedVisitRepository.deleteById(id);
     }
+
+    /**
+     * Create a planned visit from an AI suggestion.
+     * This streamlines the process of turning an AI recommendation into an actual scheduled visit.
+     *
+     * @param userId The user ID
+     * @param locationId The location ID
+     * @param startTime The planned start time
+     * @param endTime The planned end time
+     * @param purpose Optional purpose of the visit
+     * @return The created planned visit
+     */
+    @Transactional
+    public PlannedVisit createPlannedVisitFromSuggestion(
+            Long userId, Long locationId, 
+            LocalDateTime startTime, LocalDateTime endTime, 
+            String purpose) {
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        Location location = locationRepository.findById(locationId)
+                .orElseThrow(() -> new RuntimeException("Location not found"));
+        
+        PlannedVisit plannedVisit = PlannedVisit.builder()
+                .user(user)
+                .location(location)
+                .plannedStartTime(startTime)
+                .plannedEndTime(endTime)
+                .purpose(purpose)
+                .status(VisitStatus.PLANNED)
+                .build();
+        
+        return plannedVisitRepository.save(plannedVisit);
+    }
 }

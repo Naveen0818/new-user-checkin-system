@@ -8,8 +8,6 @@ import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -27,13 +25,11 @@ public class EventController {
     }
 
     @PostMapping("/location/{locationId}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Event> createEvent(
-            @AuthenticationPrincipal User user,
             @PathVariable Long locationId,
             @Valid @RequestBody Event event) {
         try {
-            Event createdEvent = eventService.createEvent(event, user.getId(), locationId);
+            Event createdEvent = eventService.createEvent(event, null, locationId);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdEvent);
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
@@ -41,7 +37,6 @@ public class EventController {
     }
 
     @PutMapping("/{eventId}/status/{status}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Event> updateEventStatus(
             @PathVariable Long eventId,
             @PathVariable EventStatus status) {
@@ -54,7 +49,6 @@ public class EventController {
     }
 
     @DeleteMapping("/{eventId}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Void> deleteEvent(@PathVariable Long eventId) {
         try {
             eventService.deleteEvent(eventId);
@@ -78,9 +72,8 @@ public class EventController {
     }
 
     @GetMapping("/organizer")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
-    public ResponseEntity<List<Event>> getOrganizerEvents(@AuthenticationPrincipal User user) {
-        List<Event> events = eventService.getEventsByOrganizer(user.getId());
+    public ResponseEntity<List<Event>> getOrganizerEvents() {
+        List<Event> events = eventService.getEventsByOrganizer(null);
         return ResponseEntity.ok(events);
     }
 
@@ -105,13 +98,12 @@ public class EventController {
     }
 
     @GetMapping("/attendee")
-    public ResponseEntity<List<Event>> getAttendeeEvents(@AuthenticationPrincipal User user) {
-        List<Event> events = eventService.getEventsByAttendee(user.getId());
+    public ResponseEntity<List<Event>> getAttendeeEvents() {
+        List<Event> events = eventService.getEventsByAttendee(null);
         return ResponseEntity.ok(events);
     }
 
     @PostMapping("/{eventId}/attendees/{userId}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Event> addAttendee(
             @PathVariable Long eventId,
             @PathVariable Long userId) {
@@ -124,7 +116,6 @@ public class EventController {
     }
 
     @DeleteMapping("/{eventId}/attendees/{userId}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Event> removeAttendee(
             @PathVariable Long eventId,
             @PathVariable Long userId) {

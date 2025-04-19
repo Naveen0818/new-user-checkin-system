@@ -21,6 +21,13 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     List<User> findByManagerId(Long managerId);
     
+    /**
+     * Find all users managed by a specific manager
+     * @param manager The manager user entity
+     * @return List of users that report to the manager
+     */
+    List<User> findByManager(User manager);
+    
     List<User> findByLocationId(Long locationId);
     
     List<User> findByRole(Role role);

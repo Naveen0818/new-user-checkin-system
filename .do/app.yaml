@@ -1,0 +1,44 @@
+name: user-checkin-system
+region: sfo
+services:
+- name: api
+  github:
+    repo: YOUR_GITHUB_REPO
+    branch: main
+    deploy_on_push: true
+  build_command: ./mvnw package -DskipTests
+  run_command: java -jar target/*.jar
+  http_port: 8080
+  instance_count: 1
+  instance_size_slug: basic-xs
+  routes:
+  - path: /
+  envs:
+  - key: SPRING_PROFILES_ACTIVE
+    value: prod
+    scope: RUN_TIME
+  - key: SPRING_DATASOURCE_URL
+    value: ${db.DATABASE_URL}
+    scope: RUN_TIME
+  - key: SPRING_DATASOURCE_USERNAME
+    value: ${db.USERNAME}
+    scope: RUN_TIME
+  - key: SPRING_DATASOURCE_PASSWORD
+    value: ${db.PASSWORD}
+    scope: RUN_TIME
+  - key: OPENAI_API_KEY
+    value: your_openai_api_key
+    scope: RUN_TIME
+    type: SECRET
+  - key: APP_JWT_SECRET
+    value: your_jwt_secret
+    scope: RUN_TIME
+    type: SECRET
+
+databases:
+- name: db
+  engine: PG
+  version: "14"
+  production: true
+  cluster_size: db-s-1vcpu-1gb
+  db_name: checkin_db

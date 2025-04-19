@@ -1,4 +1,4 @@
-# User Check-In System
+# User Check-in System
 
 A comprehensive Spring Boot application for managing user check-ins, planned visits, and events within an organization.
 
@@ -63,6 +63,87 @@ A comprehensive Spring Boot application for managing user check-ins, planned vis
 - `GET /locations` - Get all locations
 - `POST /locations` - Create a new location (DIRECTOR+ role)
 - `PUT /locations/{id}` - Update a location (DIRECTOR+ role)
+
+## Production Deployment Guide
+
+This guide outlines the steps to deploy the User Check-in System to a production environment.
+
+### Prerequisites
+
+- Java 17 or later
+- PostgreSQL 14 or later
+- Docker and Docker Compose (for containerized deployment)
+- An OpenAI API key
+
+### Deployment Options
+
+#### Option 1: Docker Compose Deployment (Self-hosted)
+
+1. Configure environment variables:
+   ```
+   cp .env.production.example .env.production
+   ```
+   
+2. Edit `.env.production` with your actual values:
+   - Database credentials
+   - OpenAI API key
+   - JWT secret
+
+3. Run the deployment script:
+   ```
+   ./deploy.sh
+   ```
+
+4. The application will be available at `http://your-server-ip:8080/api`
+
+#### Option 2: AWS Elastic Beanstalk
+
+1. Install the AWS EB CLI
+2. Initialize your EB environment:
+   ```
+   eb init
+   ```
+
+3. Create a new environment:
+   ```
+   eb create checkin-system-prod
+   ```
+
+4. Configure environment variables in the EB Console or with:
+   ```
+   eb setenv SPRING_PROFILES_ACTIVE=prod SPRING_DATASOURCE_URL=jdbc:postgresql://... OPENAI_API_KEY=sk-...
+   ```
+
+5. Deploy the application:
+   ```
+   eb deploy
+   ```
+
+#### Option 3: Digital Ocean App Platform
+
+1. Connect your GitHub repository to Digital Ocean
+2. Use the provided `.do/app.yaml` as a template
+3. Configure your environment variables in the Digital Ocean console
+4. Deploy the application
+
+### Database Migration
+
+The application uses Flyway for database migrations. On startup, Flyway will automatically apply any pending migrations.
+
+For a clean installation, the initial schema is created by `V1__init_schema.sql`.
+
+### Monitoring and Maintenance
+
+- The application exposes health and metrics endpoints at `/api/actuator/health` and `/api/actuator/metrics`
+- Set up monitoring tools to track application performance
+- Regular database backups are recommended
+
+### Security Considerations
+
+- Store sensitive information (API keys, passwords) in environment variables or a secure secrets manager
+- Keep your JWT secret secure and rotate it periodically
+- Enable HTTPS for all traffic in production
+- Implement rate limiting for API endpoints
 
 ## Setup and Running
 
@@ -137,4 +218,3 @@ For detailed information about using the API documentation tools, refer to the [
 ## GitHub Repository
 
 This project is maintained in a GitHub repository at: https://github.com/naveen0818/naveen0818
-# new-user-checkin-system

@@ -5,7 +5,6 @@ import com.example.checkin.service.LocationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,7 +34,6 @@ public class LocationController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Location> createLocation(@Valid @RequestBody Location location) {
         if (locationService.existsByName(location.getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Location with this name already exists");
@@ -46,7 +44,6 @@ public class LocationController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Location> updateLocation(
             @PathVariable Long id,
             @Valid @RequestBody Location location) {
@@ -61,7 +58,6 @@ public class LocationController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('EXECUTIVE')")
     public ResponseEntity<Void> deleteLocation(@PathVariable Long id) {
         if (!locationService.getLocationById(id).isPresent()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Location not found");

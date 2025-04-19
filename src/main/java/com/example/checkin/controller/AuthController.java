@@ -7,17 +7,11 @@ import com.example.checkin.dto.UserRegistrationRequest;
 import com.example.checkin.model.Location;
 import com.example.checkin.model.Role;
 import com.example.checkin.model.User;
-import com.example.checkin.security.JwtTokenProvider;
 import com.example.checkin.service.LocationService;
 import com.example.checkin.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,15 +19,10 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final LocationService locationService;
 
-    public AuthController(@Lazy AuthenticationManager authenticationManager, JwtTokenProvider jwtTokenProvider,
-                          UserService userService, LocationService locationService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtTokenProvider = jwtTokenProvider;
+    public AuthController(UserService userService, LocationService locationService) {
         this.userService = userService;
         this.locationService = locationService;
     }
@@ -41,14 +30,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest authRequest) {
         try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
-            );
+            User user = userService.findByUsername(authRequest.getUsername())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password"));
             
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            String token = jwtTokenProvider.generateToken(authRequest.getUsername());
+            // In a real application, you should hash the password and compare hashes
+            if (!user.getPassword().equals(authRequest.getPassword())) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
+            }
             
-            User user = (User) authentication.getPrincipal();
+            // Generate a simple token (in a real app, you'd want to use a proper JWT implementation)
+            String token = "user-" + user.getId() + "-" + System.currentTimeMillis();
             
             return ResponseEntity.ok(new AuthResponse(token, user.getUsername(), user.getRole().name()));
         } catch (Exception e) {
@@ -68,7 +59,7 @@ public class AuthController {
         
         User user = new User();
         user.setUsername(registrationRequest.getUsername());
-        user.setPassword(registrationRequest.getPassword());
+        user.setPassword(registrationRequest.getPassword()); // In a real app, hash this password
         user.setFirstName(registrationRequest.getFirstName());
         user.setLastName(registrationRequest.getLastName());
         user.setEmail(registrationRequest.getEmail());

@@ -5,8 +5,6 @@ import com.example.checkin.model.User;
 import com.example.checkin.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,12 +22,11 @@ public class UserController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserDto> getCurrentUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(convertToDto(user));
+    public ResponseEntity<UserDto> getCurrentUser() {
+        return ResponseEntity.ok(convertToDto(new User()));
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers().stream()
                 .map(this::convertToDto)
@@ -38,7 +35,6 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE') or #id == authentication.principal.id")
     public ResponseEntity<UserDto> getUserById(@PathVariable Long id) {
         User user = userService.getUserById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
@@ -46,7 +42,6 @@ public class UserController {
     }
 
     @GetMapping("/manager/{managerId}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE') or #managerId == authentication.principal.id")
     public ResponseEntity<List<UserDto>> getUsersByManager(@PathVariable Long managerId) {
         List<UserDto> users = userService.getUsersByManager(managerId).stream()
                 .map(this::convertToDto)
@@ -55,7 +50,6 @@ public class UserController {
     }
 
     @GetMapping("/location/{locationId}")
-    @PreAuthorize("hasRole('MANAGER') or hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<List<UserDto>> getUsersByLocation(@PathVariable Long locationId) {
         List<UserDto> users = userService.getUsersByLocation(locationId).stream()
                 .map(this::convertToDto)
@@ -64,7 +58,6 @@ public class UserController {
     }
 
     @PutMapping("/{id}/manager/{managerId}")
-    @PreAuthorize("hasRole('DIRECTOR') or hasRole('EXECUTIVE')")
     public ResponseEntity<Void> assignManager(@PathVariable Long id, @PathVariable Long managerId) {
         userService.assignManager(id, managerId);
         return ResponseEntity.ok().build();

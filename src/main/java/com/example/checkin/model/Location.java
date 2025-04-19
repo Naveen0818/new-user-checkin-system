@@ -35,6 +35,12 @@ public class Location {
 
     @Column
     private String zipCode;
+    
+    @Column
+    private Integer capacity;
+    
+    @Column
+    private String type;
 
     @OneToMany(mappedBy = "location")
     private List<User> users = new ArrayList<>();

@@ -48,6 +48,7 @@ public class Event {
         joinColumns = @JoinColumn(name = "event_id"),
         inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @Builder.Default
     private List<User> attendees = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

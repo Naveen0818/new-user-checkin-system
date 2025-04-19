@@ -47,20 +47,24 @@ public class User implements UserDetails {
     private User manager;
 
     @OneToMany(mappedBy = "manager")
-    private List<User> subordinates = new ArrayList<>();
+    @Builder.Default
+    private List<User> directReports = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "location_id")
     private Location location;
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<CheckIn> checkIns = new ArrayList<>();
 
     @OneToMany(mappedBy = "user")
+    @Builder.Default
     private List<PlannedVisit> plannedVisits = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "attendees")
-    private List<Event> events = new ArrayList<>();
+    @OneToMany(mappedBy = "organizer")
+    @Builder.Default
+    private List<Event> organizedEvents = new ArrayList<>();
 
     // Getters and Setters
     public Long getId() {
@@ -129,12 +133,12 @@ public class User implements UserDetails {
         this.manager = manager;
     }
 
-    public List<User> getSubordinates() {
-        return subordinates;
+    public List<User> getDirectReports() {
+        return directReports;
     }
 
-    public void setSubordinates(List<User> subordinates) {
-        this.subordinates = subordinates;
+    public void setDirectReports(List<User> directReports) {
+        this.directReports = directReports;
     }
 
     public Location getLocation() {
@@ -161,12 +165,12 @@ public class User implements UserDetails {
         this.plannedVisits = plannedVisits;
     }
 
-    public List<Event> getEvents() {
-        return events;
+    public List<Event> getOrganizedEvents() {
+        return organizedEvents;
     }
 
-    public void setEvents(List<Event> events) {
-        this.events = events;
+    public void setOrganizedEvents(List<Event> organizedEvents) {
+        this.organizedEvents = organizedEvents;
     }
 
     @Override

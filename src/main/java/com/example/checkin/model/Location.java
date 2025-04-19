@@ -37,8 +37,10 @@ public class Location {
     private String zipCode;
 
     @OneToMany(mappedBy = "location")
+    @Builder.Default
     private List<User> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "location")
+    @Builder.Default
     private List<Event> events = new ArrayList<>();
 }

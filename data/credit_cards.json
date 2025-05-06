@@ -1,0 +1,122 @@
+[
+    {
+        "name": "Chase Sapphire Preferred",
+        "type": "Travel Rewards",
+        "annual_fee": 95,
+        "apr": 21.49,
+        "rewards": "2x points on travel and dining, 1x points on all other purchases",
+        "credit_score_required": 700,
+        "features": [
+            "60,000 bonus points after spending $4,000 in 3 months",
+            "No foreign transaction fees",
+            "Travel insurance benefits",
+            "Primary car rental insurance",
+            "Trip cancellation/interruption insurance"
+        ]
+    },
+    {
+        "name": "Capital One Venture Rewards",
+        "type": "Travel Rewards",
+        "annual_fee": 95,
+        "apr": 20.99,
+        "rewards": "2x miles on every purchase",
+        "credit_score_required": 690,
+        "features": [
+            "75,000 bonus miles after spending $4,000 in 3 months",
+            "No foreign transaction fees",
+            "Global Entry/TSA PreCheck credit",
+            "Travel accident insurance",
+            "Extended warranty protection"
+        ]
+    },
+    {
+        "name": "American Express Gold",
+        "type": "Premium Rewards",
+        "annual_fee": 250,
+        "apr": 20.99,
+        "rewards": "4x points at restaurants and supermarkets, 3x points on flights",
+        "credit_score_required": 720,
+        "features": [
+            "60,000 bonus points after spending $4,000 in 6 months",
+            "$120 annual dining credit",
+            "$120 annual airline fee credit",
+            "No foreign transaction fees",
+            "Premium travel benefits"
+        ]
+    },
+    {
+        "name": "Discover it Cash Back",
+        "type": "Cash Back",
+        "annual_fee": 0,
+        "apr": 16.99,
+        "rewards": "5% cash back on rotating categories, 1% on all other purchases",
+        "credit_score_required": 670,
+        "features": [
+            "Cashback Match for first year",
+            "No annual fee",
+            "No foreign transaction fees",
+            "Free FICO score",
+            "0% intro APR for 14 months"
+        ]
+    },
+    {
+        "name": "Citi Double Cash",
+        "type": "Cash Back",
+        "annual_fee": 0,
+        "apr": 19.24,
+        "rewards": "2% cash back on all purchases (1% when you buy, 1% when you pay)",
+        "credit_score_required": 680,
+        "features": [
+            "No annual fee",
+            "No rotating categories",
+            "No foreign transaction fees",
+            "Free FICO score",
+            "0% intro APR for 18 months"
+        ]
+    },
+    {
+        "name": "Chase Freedom Unlimited",
+        "type": "Cash Back",
+        "annual_fee": 0,
+        "apr": 20.49,
+        "rewards": "1.5% cash back on all purchases",
+        "credit_score_required": 680,
+        "features": [
+            "$200 bonus after spending $500 in 3 months",
+            "No annual fee",
+            "No foreign transaction fees",
+            "Free FICO score",
+            "0% intro APR for 15 months"
+        ]
+    },
+    {
+        "name": "Bank of America Travel Rewards",
+        "type": "Travel Rewards",
+        "annual_fee": 0,
+        "apr": 18.24,
+        "rewards": "1.5x points on all purchases",
+        "credit_score_required": 670,
+        "features": [
+            "25,000 bonus points after spending $1,000 in 3 months",
+            "No annual fee",
+            "No foreign transaction fees",
+            "No blackout dates",
+            "Points never expire"
+        ]
+    },
+    {
+        "name": "Wells Fargo Active Cash",
+        "type": "Cash Back",
+        "annual_fee": 0,
+        "apr": 19.24,
+        "rewards": "2% cash back on all purchases",
+        "credit_score_required": 670,
+        "features": [
+            "$200 cash rewards after spending $1,000 in 3 months",
+            "No annual fee",
+            "No foreign transaction fees",
+            "Free FICO score",
+            "0% intro APR for 15 months"
+        ]
+    }
+] 

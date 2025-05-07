@@ -5,6 +5,7 @@ import com.credit.model.CreditData;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.service.OpenAiService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,34 +16,30 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class GPTService {
+    @Value("${openai.api.key}")
+    private String apiKey;
+
     private final OpenAiService openAiService;
 
-    public GPTService(@Value("${openai.api.key}") String apiKey) {
-        this.openAiService = new OpenAiService(apiKey, Duration.ofSeconds(30));
-    }
-
-    public String getCreditExplanation(CreditData creditData, double predictionProbability) {
-        String prompt = String.format("""
-            Based on the following credit information, provide a detailed analysis of the credit eligibility:
-            
-            Age of Credit: %.1f years
-            Derogatory Marks: %d
-            Credit Utilization: %.1f%%
-            Missed Payments: %d
-            Credit Inquiries: %d
-            Total Accounts: %d
-            Credit Limit: $%.2f
-            Annual Income: $%.2f
-            
-            Eligibility Probability: %.2f%%
-            
-            Please provide:
-            1. A detailed analysis of the credit profile
-            2. Key factors affecting the eligibility
-            3. Specific recommendations for improvement
-            4. Expected timeline for improvement
-            """,
+    public String getCreditExplanation(CreditData creditData, double[] probabilities) {
+        String prompt = String.format(
+            "Based on the following credit profile:\n" +
+            "Age of Credit: %.1f years\n" +
+            "Derogatory Marks: %d\n" +
+            "Credit Utilization: %.1f%%\n" +
+            "Missed Payments: %d\n" +
+            "Credit Inquiries: %d\n" +
+            "Total Accounts: %d\n" +
+            "Credit Limit: $%.2f\n" +
+            "Income: $%.2f\n\n" +
+            "The model predicts the following probabilities:\n" +
+            "Low: %.1f%%\n" +
+            "Medium: %.1f%%\n" +
+            "High: %.1f%%\n\n" +
+            "Please provide a detailed explanation of this credit profile and the prediction, " +
+            "including factors that influenced the decision and suggestions for improvement.",
             creditData.getAgeOfCredit(),
             creditData.getDerogatoryMarks(),
             creditData.getCreditUtilization(),
@@ -51,7 +48,9 @@ public class GPTService {
             creditData.getTotalAccounts(),
             creditData.getCreditLimit(),
             creditData.getIncome(),
-            predictionProbability * 100
+            probabilities[0] * 100,
+            probabilities[1] * 100,
+            probabilities[2] * 100
         );
 
         try {
@@ -74,55 +73,34 @@ public class GPTService {
         }
     }
 
-    public List<CreditCard> getCardRecommendations(
-        int creditScore,
-        double income,
-        String creditHistory,
-        List<CreditCard> availableCards
-    ) {
-        StringBuilder cardsInfo = new StringBuilder();
-        for (CreditCard card : availableCards) {
-            cardsInfo.append(String.format("""
-                Card: %s
-                Type: %s
-                Annual Fee: $%.2f
-                APR: %.2f%%
-                Rewards: %s
-                Required Credit Score: %d
-                Features: %s
-                
-                """,
-                card.getName(),
-                card.getType(),
-                card.getAnnualFee(),
-                card.getApr(),
-                card.getRewards(),
-                card.getCreditScoreRequired(),
-                String.join(", ", card.getFeatures())
-            ));
-        }
-
-        String prompt = String.format("""
-            Based on the following user profile and available credit cards, provide personalized recommendations:
-            
-            User Profile:
-            - Credit Score: %d
-            - Annual Income: $%.2f
-            - Credit History: %s
-            
-            Available Credit Cards:
-            %s
-            
-            Please:
-            1. Select the top 3 most suitable cards
-            2. Explain why each card is recommended
-            3. Highlight the best features for this user
-            4. Provide application tips
-            """,
-            creditScore,
-            income,
-            creditHistory,
-            cardsInfo
+    public String getCardRecommendations(CreditData creditData, double[] probabilities) {
+        String prompt = String.format(
+            "Based on the following credit profile:\n" +
+            "Age of Credit: %.1f years\n" +
+            "Derogatory Marks: %d\n" +
+            "Credit Utilization: %.1f%%\n" +
+            "Missed Payments: %d\n" +
+            "Credit Inquiries: %d\n" +
+            "Total Accounts: %d\n" +
+            "Credit Limit: $%.2f\n" +
+            "Income: $%.2f\n\n" +
+            "The model predicts the following probabilities:\n" +
+            "Low: %.1f%%\n" +
+            "Medium: %.1f%%\n" +
+            "High: %.1f%%\n\n" +
+            "Please provide specific credit card recommendations based on this profile, " +
+            "including why each card is suitable and what benefits they offer.",
+            creditData.getAgeOfCredit(),
+            creditData.getDerogatoryMarks(),
+            creditData.getCreditUtilization(),
+            creditData.getMissedPayments(),
+            creditData.getCreditInquiries(),
+            creditData.getTotalAccounts(),
+            creditData.getCreditLimit(),
+            creditData.getIncome(),
+            probabilities[0] * 100,
+            probabilities[1] * 100,
+            probabilities[2] * 100
         );
 
         try {
@@ -137,32 +115,11 @@ public class GPTService {
                 .maxTokens(1000)
                 .build();
 
-            String response = openAiService.createChatCompletion(request)
+            return openAiService.createChatCompletion(request)
                 .getChoices().get(0).getMessage().getContent();
-
-            // Match recommendations with card data
-            List<CreditCard> recommendations = new ArrayList<>();
-            for (CreditCard card : availableCards) {
-                if (response.toLowerCase().contains(card.getName().toLowerCase())) {
-                    CreditCard recommendedCard = new CreditCard();
-                    recommendedCard.setName(card.getName());
-                    recommendedCard.setType(card.getType());
-                    recommendedCard.setAnnualFee(card.getAnnualFee());
-                    recommendedCard.setApr(card.getApr());
-                    recommendedCard.setRewards(card.getRewards());
-                    recommendedCard.setCreditScoreRequired(card.getCreditScoreRequired());
-                    recommendedCard.setFeatures(card.getFeatures());
-                    recommendedCard.setGptExplanation(response);
-                    recommendations.add(recommendedCard);
-                    if (recommendations.size() >= 3) {
-                        break;
-                    }
-                }
-            }
-            return recommendations;
         } catch (Exception e) {
             log.error("Error generating card recommendations", e);
-            return List.of();
+            return "Error generating recommendations: " + e.getMessage();
         }
     }
 } 

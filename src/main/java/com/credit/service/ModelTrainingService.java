@@ -70,22 +70,21 @@ public class ModelTrainingService {
     private void trainModel(List<TrainingData> trainingData) {
         try {
             // Convert training data to feature arrays
-            float[][] features = new float[trainingData.size()][8];
-            float[] labels = new float[trainingData.size()];
+            List<double[]> features = new ArrayList<>();
+            List<Double> labels = new ArrayList<>();
             
-            for (int i = 0; i < trainingData.size(); i++) {
-                TrainingData data = trainingData.get(i);
-                features[i] = new float[] {
-                    data.getAgeOfCredit().floatValue(),
-                    data.getDerogatoryMarks().floatValue(),
-                    data.getCreditUtilization().floatValue(),
-                    data.getMissedPayments().floatValue(),
-                    data.getCreditInquiries().floatValue(),
-                    data.getTotalAccounts().floatValue(),
-                    data.getCreditLimit().floatValue(),
-                    data.getIncome().floatValue()
-                };
-                labels[i] = data.isEligible() ? 1.0f : 0.0f;
+            for (TrainingData data : trainingData) {
+                features.add(new double[] {
+                    data.getAgeOfCredit(),
+                    data.getDerogatoryMarks(),
+                    data.getCreditUtilization(),
+                    data.getMissedPayments(),
+                    data.getCreditInquiries(),
+                    data.getTotalAccounts(),
+                    data.getCreditLimit(),
+                    data.getIncome()
+                });
+                labels.add(data.isEligible() ? 1.0 : 0.0);
             }
             
             // Train the model

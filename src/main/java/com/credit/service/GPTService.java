@@ -16,12 +16,12 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class GPTService {
-    @Value("${openai.api.key}")
-    private String apiKey;
-
     private final OpenAiService openAiService;
+
+    public GPTService(@Value("${openai.api.key}") String apiKey) {
+        this.openAiService = new OpenAiService(apiKey, Duration.ofSeconds(30));
+    }
 
     public String getCreditExplanation(CreditData creditData, double[] probabilities) {
         String prompt = String.format(

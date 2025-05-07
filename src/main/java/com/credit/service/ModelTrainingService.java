@@ -32,7 +32,7 @@ public class ModelTrainingService {
             // Generate realistic credit data
             sample.setAgeOfCredit(random.nextDouble() * 20); // 0-20 years
             sample.setDerogatoryMarks(random.nextInt(10)); // 0-9 marks
-            sample.setCreditUtilization(random.nextDouble() * 100); // 0-100%
+            sample.setFicoScore(random.nextInt(551) + 300); // 300-850
             sample.setMissedPayments(random.nextInt(12)); // 0-11 missed payments
             sample.setCreditInquiries(random.nextInt(10)); // 0-9 inquiries
             sample.setTotalAccounts(random.nextInt(20)); // 0-19 accounts
@@ -55,14 +55,27 @@ public class ModelTrainingService {
         // Credit history (0-20 points)
         score += data.getAgeOfCredit() * 1.0;
         
-        // Derogatory marks (0-20 points, negative impact)
-        score -= data.getDerogatoryMarks() * 2.0;
+        // Derogatory marks (0-40 points, negative impact)
+        // Exponential penalty for more marks
+        score -= Math.pow(data.getDerogatoryMarks(), 1.5) * 3.0;
         
-        // Credit utilization (0-20 points, negative impact)
-        score -= data.getCreditUtilization() * 0.2;
+        // FICO Score (0-30 points)
+        int ficoScore = data.getFicoScore();
+        if (ficoScore >= 800) {
+            score += 30; // Exceptional
+        } else if (ficoScore >= 740) {
+            score += 25; // Very Good
+        } else if (ficoScore >= 670) {
+            score += 20; // Good
+        } else if (ficoScore >= 580) {
+            score += 10; // Fair
+        } else {
+            score += 5;  // Poor
+        }
         
-        // Payment history (0-20 points, negative impact)
-        score -= data.getMissedPayments() * 1.5;
+        // Payment history (0-40 points, negative impact)
+        // Exponential penalty for more missed payments
+        score -= Math.pow(data.getMissedPayments(), 1.5) * 2.5;
         
         // Credit inquiries (0-10 points, negative impact)
         score -= data.getCreditInquiries() * 1.0;
@@ -90,7 +103,7 @@ public class ModelTrainingService {
                 features.add(new double[] {
                     data.getAgeOfCredit(),
                     data.getDerogatoryMarks(),
-                    data.getCreditUtilization(),
+                    data.getFicoScore(),
                     data.getMissedPayments(),
                     data.getCreditInquiries(),
                     data.getTotalAccounts(),

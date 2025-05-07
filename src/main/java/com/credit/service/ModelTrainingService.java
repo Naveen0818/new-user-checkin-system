@@ -39,9 +39,8 @@ public class ModelTrainingService {
             sample.setCreditLimit(random.nextDouble() * 50000); // $0-$50,000
             sample.setIncome(random.nextDouble() * 200000); // $0-$200,000
             
-            // Determine eligibility based on rules
-            boolean eligible = determineEligibility(sample);
-            sample.setEligible(eligible);
+            // Determine eligibility class based on rules
+            sample.setEligibilityClass(determineEligibilityClass(sample));
             
             data.add(sample);
         }
@@ -49,43 +48,56 @@ public class ModelTrainingService {
         return data;
     }
 
-    private boolean determineEligibility(TrainingData data) {
-        // Simple rule-based eligibility determination
-        // These rules can be adjusted based on your requirements
-        if (data.getDerogatoryMarks() > 3) return false;
-        if (data.getMissedPayments() > 2) return false;
-        if (data.getCreditUtilization() > 80) return false;
-        if (data.getCreditInquiries() > 5) return false;
+    private int determineEligibilityClass(TrainingData data) {
+        // Calculate a score based on various factors
+        double score = 0;
         
-        // Income to credit limit ratio
+        // Credit history (0-20 points)
+        score += data.getAgeOfCredit() * 1.0;
+        
+        // Derogatory marks (0-20 points, negative impact)
+        score -= data.getDerogatoryMarks() * 2.0;
+        
+        // Credit utilization (0-20 points, negative impact)
+        score -= data.getCreditUtilization() * 0.2;
+        
+        // Payment history (0-20 points, negative impact)
+        score -= data.getMissedPayments() * 1.5;
+        
+        // Credit inquiries (0-10 points, negative impact)
+        score -= data.getCreditInquiries() * 1.0;
+        
+        // Account diversity (0-10 points)
+        score += data.getTotalAccounts() * 0.5;
+        
+        // Income to credit limit ratio (0-20 points)
         double incomeToLimitRatio = data.getIncome() / (data.getCreditLimit() + 1);
-        if (incomeToLimitRatio < 0.1) return false;
+        score += Math.min(incomeToLimitRatio * 10, 20);
         
-        // Age of credit history
-        if (data.getAgeOfCredit() < 1) return false;
-        
-        return true;
+        // Determine class based on score
+        if (score < 30) return 0; // Low
+        if (score < 60) return 1; // Medium
+        return 2; // High
     }
 
     private void trainModel(List<TrainingData> trainingData) {
         try {
             // Convert training data to feature arrays
-            float[][] features = new float[trainingData.size()][8];
-            float[] labels = new float[trainingData.size()];
+            List<double[]> features = new ArrayList<>();
+            List<Integer> labels = new ArrayList<>();
             
-            for (int i = 0; i < trainingData.size(); i++) {
-                TrainingData data = trainingData.get(i);
-                features[i] = new float[] {
-                    data.getAgeOfCredit().floatValue(),
-                    data.getDerogatoryMarks().floatValue(),
-                    data.getCreditUtilization().floatValue(),
-                    data.getMissedPayments().floatValue(),
-                    data.getCreditInquiries().floatValue(),
-                    data.getTotalAccounts().floatValue(),
-                    data.getCreditLimit().floatValue(),
-                    data.getIncome().floatValue()
-                };
-                labels[i] = data.isEligible() ? 1.0f : 0.0f;
+            for (TrainingData data : trainingData) {
+                features.add(new double[] {
+                    data.getAgeOfCredit(),
+                    data.getDerogatoryMarks(),
+                    data.getCreditUtilization(),
+                    data.getMissedPayments(),
+                    data.getCreditInquiries(),
+                    data.getTotalAccounts(),
+                    data.getCreditLimit(),
+                    data.getIncome()
+                });
+                labels.add(data.getEligibilityClass());
             }
             
             // Train the model

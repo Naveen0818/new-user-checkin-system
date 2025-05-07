@@ -49,7 +49,7 @@ public class CreditPredictionService {
                 1.0, // bias term
                 creditData.getAgeOfCredit(),
                 creditData.getDerogatoryMarks(),
-                creditData.getCreditUtilization(),
+                creditData.getFicoScore(),
                 creditData.getMissedPayments(),
                 creditData.getCreditInquiries(),
                 creditData.getTotalAccounts(),

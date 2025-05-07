@@ -6,5 +6,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class TrainingData extends CreditData {
-    private boolean eligible; // Target variable for training
+    private Integer eligibilityClass; // 0=Low, 1=Medium, 2=High
 } 

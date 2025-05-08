@@ -16,110 +16,79 @@ import java.util.List;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class GPTService {
-    @Value("${openai.api.key}")
-    private String apiKey;
-
     private final OpenAiService openAiService;
 
-    public String getCreditExplanation(CreditData creditData, double[] probabilities) {
-        String prompt = String.format(
-            "Based on the following credit profile:\n" +
-            "Age of Credit: %.1f years\n" +
-            "Derogatory Marks: %d\n" +
-            "Credit Utilization: %.1f%%\n" +
-            "Missed Payments: %d\n" +
-            "Credit Inquiries: %d\n" +
-            "Total Accounts: %d\n" +
-            "Credit Limit: $%.2f\n" +
-            "Income: $%.2f\n\n" +
-            "The model predicts the following probabilities:\n" +
-            "Low: %.1f%%\n" +
-            "Medium: %.1f%%\n" +
-            "High: %.1f%%\n\n" +
-            "Please provide a detailed explanation of this credit profile and the prediction, " +
-            "including factors that influenced the decision and suggestions for improvement.",
-            creditData.getAgeOfCredit(),
-            creditData.getDerogatoryMarks(),
-            creditData.getCreditUtilization(),
-            creditData.getMissedPayments(),
-            creditData.getCreditInquiries(),
-            creditData.getTotalAccounts(),
-            creditData.getCreditLimit(),
-            creditData.getIncome(),
-            probabilities[0] * 100,
-            probabilities[1] * 100,
-            probabilities[2] * 100
-        );
+    @Value("${openai.api.key:dummy-key}")
+    private String apiKey;
 
-        try {
-            List<ChatMessage> messages = new ArrayList<>();
-            messages.add(new ChatMessage("system", "You are a credit analysis expert. Provide detailed, professional analysis of credit profiles."));
-            messages.add(new ChatMessage("user", prompt));
-
-            ChatCompletionRequest request = ChatCompletionRequest.builder()
-                .model("gpt-3.5-turbo")
-                .messages(messages)
-                .temperature(0.7)
-                .maxTokens(500)
-                .build();
-
-            return openAiService.createChatCompletion(request)
-                .getChoices().get(0).getMessage().getContent();
-        } catch (Exception e) {
-            log.error("Error generating credit explanation", e);
-            return "Error generating explanation: " + e.getMessage();
-        }
+    public GPTService(@Value("${openai.api.key}") String apiKey) {
+        this.openAiService = new OpenAiService(apiKey, Duration.ofSeconds(30));
     }
 
-    public String getCardRecommendations(CreditData creditData, double[] probabilities) {
-        String prompt = String.format(
-            "Based on the following credit profile:\n" +
-            "Age of Credit: %.1f years\n" +
-            "Derogatory Marks: %d\n" +
-            "Credit Utilization: %.1f%%\n" +
-            "Missed Payments: %d\n" +
-            "Credit Inquiries: %d\n" +
-            "Total Accounts: %d\n" +
-            "Credit Limit: $%.2f\n" +
-            "Income: $%.2f\n\n" +
-            "The model predicts the following probabilities:\n" +
-            "Low: %.1f%%\n" +
-            "Medium: %.1f%%\n" +
-            "High: %.1f%%\n\n" +
-            "Please provide specific credit card recommendations based on this profile, " +
-            "including why each card is suitable and what benefits they offer.",
+    public String getCreditExplanation(CreditData creditData, double[] probabilities) {
+        // Provide a default explanation without calling OpenAI API
+        return String.format(
+            "Credit Profile Analysis:\n" +
+            "- Age of Credit: %.1f years\n" +
+            "- FICO Score: %d (Excellent: 800+, Very Good: 740-799, Good: 670-739)\n" +
+            "- Payment History: %d missed payments, %d derogatory marks\n" +
+            "- Credit Mix: %d total accounts\n" +
+            "- Credit Inquiries: %d recent inquiries\n\n" +
+            "Prediction Probabilities:\n" +
+            "- Low: %.1f%%\n" +
+            "- Medium: %.1f%%\n" +
+            "- High: %.1f%%",
             creditData.getAgeOfCredit(),
-            creditData.getDerogatoryMarks(),
-            creditData.getCreditUtilization(),
+            creditData.getFicoScore(),
             creditData.getMissedPayments(),
-            creditData.getCreditInquiries(),
+            creditData.getDerogatoryMarks(),
             creditData.getTotalAccounts(),
-            creditData.getCreditLimit(),
-            creditData.getIncome(),
+            creditData.getCreditInquiries(),
             probabilities[0] * 100,
             probabilities[1] * 100,
             probabilities[2] * 100
         );
+    }
 
-        try {
-            List<ChatMessage> messages = new ArrayList<>();
-            messages.add(new ChatMessage("system", "You are a credit card recommendation expert. Provide detailed, personalized card recommendations."));
-            messages.add(new ChatMessage("user", prompt));
-
-            ChatCompletionRequest request = ChatCompletionRequest.builder()
-                .model("gpt-3.5-turbo")
-                .messages(messages)
-                .temperature(0.7)
-                .maxTokens(1000)
-                .build();
-
-            return openAiService.createChatCompletion(request)
-                .getChoices().get(0).getMessage().getContent();
-        } catch (Exception e) {
-            log.error("Error generating card recommendations", e);
-            return "Error generating recommendations: " + e.getMessage();
+    public String getCardRecommendations(CreditData creditData, double[] probabilities, List<String> listOfOffers, String purchaseCategory) {
+        StringBuilder recommendations = new StringBuilder();
+        
+        // Base recommendations based on credit profile
+        if (probabilities[2] > 0.6) {
+            recommendations.append("Based on your excellent credit profile, you have high approval chances for premium cards.\n");
+        } else if (probabilities[1] > 0.4) {
+            recommendations.append("Your credit profile suggests good approval chances for mid-tier cards.\n");
+        } else {
+            recommendations.append("Consider starter or secured cards to build your credit.\n");
         }
+
+        // Add category-specific recommendations
+        if (purchaseCategory != null) {
+            switch (purchaseCategory.toLowerCase()) {
+                case "travel":
+                    recommendations.append("\nTravel Card Options:\n- Chase Sapphire Preferred\n- Capital One Venture\n- American Express Gold");
+                    break;
+                case "dining":
+                    recommendations.append("\nDining Card Options:\n- American Express Gold\n- Chase Freedom Unlimited\n- Capital One Savor");
+                    break;
+                case "groceries":
+                    recommendations.append("\nGrocery Card Options:\n- American Express Blue Cash Preferred\n- Chase Freedom\n- Discover it Cash Back");
+                    break;
+                case "gas":
+                    recommendations.append("\nGas Card Options:\n- Citi Custom Cash\n- Chase Freedom\n- Discover it Gas & Restaurant");
+                    break;
+            }
+        }
+
+        // Add special offers if available
+        if (listOfOffers != null && !listOfOffers.isEmpty()) {
+            recommendations.append("\n\nCurrent Special Offers:\n");
+            for (String offer : listOfOffers) {
+                recommendations.append("- ").append(offer).append("\n");
+            }
+        }
+
+        return recommendations.toString();
     }
 } 

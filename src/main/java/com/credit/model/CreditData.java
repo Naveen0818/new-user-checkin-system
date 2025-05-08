@@ -1,5 +1,6 @@
 package com.credit.model;
 
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -15,8 +16,9 @@ public class CreditData {
     private Integer derogatoryMarks;
     
     @NotNull
-    @Min(0)
-    private Double creditUtilization;
+    @Min(300)
+    @Max(850)
+    private Integer ficoScore;
     
     @NotNull
     @Min(0)

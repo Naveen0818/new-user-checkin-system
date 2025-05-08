@@ -3,11 +3,13 @@ package com.credit.controller;
 import com.credit.model.CreditData;
 import com.credit.service.CreditPredictionService;
 import com.credit.service.GPTService;
+import com.credit.service.OpenAICreditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -16,6 +18,7 @@ import java.util.Map;
 public class CreditController {
     private final CreditPredictionService predictionService;
     private final GPTService gptService;
+    private final OpenAICreditService openAICreditService;
 
     @PostMapping("/predict")
     public ResponseEntity<Map<String, Object>> predictEligibility(@RequestBody CreditData creditData) {
@@ -46,10 +49,34 @@ public class CreditController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/predict/ai")
+    public ResponseEntity<Map<String, Object>> predictWithAI(@RequestBody CreditData creditData) {
+        return ResponseEntity.ok(openAICreditService.predictWithAI(creditData));
+    }
+
     @PostMapping("/recommend")
     public ResponseEntity<Map<String, Object>> getRecommendations(@RequestBody CreditData creditData) {
         double[] probabilities = predictionService.predictEligibility(creditData);
-        String recommendations = gptService.getCardRecommendations(creditData, probabilities);
+        String recommendations = gptService.getCardRecommendations(creditData, probabilities, null, null);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("probabilities", Map.of(
+            "low", probabilities[0],
+            "medium", probabilities[1],
+            "high", probabilities[2]
+        ));
+        response.put("recommendations", recommendations);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/getRecommendationsForCard")
+    public ResponseEntity<Map<String, Object>> getRecommendationsForCard(
+            @RequestBody CreditData creditData,
+            @RequestParam(required = false) List<String> listOfOffers,
+            @RequestParam(required = false) String purchaseCategory) {
+        double[] probabilities = predictionService.predictEligibility(creditData);
+        String recommendations = gptService.getCardRecommendations(creditData, probabilities, listOfOffers, purchaseCategory);
         
         Map<String, Object> response = new HashMap<>();
         response.put("probabilities", Map.of(

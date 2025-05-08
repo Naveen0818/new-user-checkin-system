@@ -67,6 +67,13 @@
             <version>${commons.math.version}</version>
         </dependency>
         
+        <!-- Weka -->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-stable</artifactId>
+            <version>3.8.6</version>
+        </dependency>
+        
         <!-- OpenAI Client -->
         <dependency>
             <groupId>com.theokanning.openai-gpt3-java</groupId>
